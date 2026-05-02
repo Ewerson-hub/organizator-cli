@@ -1,0 +1,22 @@
+{
+  "name": "organizator_cli",
+  "version": "1.0.0",
+  "main": "index.js",
+  "scripts": {
+    "start": " node bin/index.js",
+    "test": "echo \"Error: no test specified\" && exit 1"
+  },
+  "bin": {
+    "organizator": "./bin/index.js"
+  },
+  "type": "commonjs",
+  "keywords": [],
+  "author": "",
+  "license": "ISC",
+  "description": "",
+  "dependencies": {
+    "cli-progress": "^3.12.0",
+    "commander": "^14.0.3",
+    "pipeable-js": "^0.10.0"
+  }
+}
