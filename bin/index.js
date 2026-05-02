@@ -7,12 +7,12 @@ const {MODES, EXTENSIONS} = require("../src/constrants")
 
 
 program.name("organizator")
-.requiredOption("-s, --src <paths ...>", "informe o local de onde estão os arquivos")
-.option("-d, --dest [path]", "informe o local onde os arquivos devem ficar")
+.requiredOption("-s, --source <paths ...>", "informe o local de onde estão os arquivos")
+.option("-d, --destination [path]", "informe o local onde os arquivos devem ficar")
 .option("-r, --recursive", "Define se o organizador deve procurar e organizar arquivos contidos em subpastas.")
 .addOption(new Option('-m, --mode <type>', "modos de organização")
 .choices(Object.values(MODES)).default(MODES.TYPE))
-.addOption(new Option('-e, --ext <extensions...>', "filtro de extensoẽs")
+.addOption(new Option('-e, --extensions <extensions...>', "filtro de extensoẽs")
 .choices(Object.values(EXTENSIONS)).default(EXTENSIONS))
 .action((options) => {
 
