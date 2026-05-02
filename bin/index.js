@@ -16,15 +16,15 @@ program.name("organizator")
 .choices(Object.values(EXTENSIONS)).default(EXTENSIONS))
 .action((options) => {
 
-    const src = (options.src === '.')? process.cwd() : path.resolve(options.src)
-    const dest = (options.dest)? path.resolve(options.dest) : src;
+    const src = (options.source === '.')? process.cwd() : path.resolve(options.src)
+    const dest = (options.destination)? path.resolve(options.dest) : src;
     const mode = options.mode;
-    const ext = options.ext
+    const ext = options.extensions
     const recursive = options.recursive
 
-    console.log(src)
+
     // printHello([src, dest, mode, ext])
-    // startOrganization(src, dest, mode, ext, recursive)
+    startOrganization(src, dest, mode, ext, recursive)
     
 });
 program.parse();
