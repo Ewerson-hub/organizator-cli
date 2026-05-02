@@ -10,7 +10,9 @@ module.exports = {
 
     startOrganization: async (src, dest, mode, ext, recursive) => { 
         try{
-            const files = (!recursive)? await fs.readdir(src, {withFileTypes: true}): await fs.readdir(src, {withFileTypes: true, recursive: true});  
+            const readdirOptions = (!recursive)? {withFileTypes: true} : {withFileTypes: true, recursive: true};
+            
+            const files = await fs.readdir(src, readdirOptions)
 
             if(files.length === 0) console.log('Erro ! A pasta não contem arquivos para organizar')
 
@@ -27,7 +29,7 @@ module.exports = {
  
                 //checa se a extensão esta na lista de arquivos desejado
                 if(extensionsWhiteList.has(extensionName)){
-                    
+
                     //checa se o diretorio ja existe, se não -> cria ele 
                     if(!createdDirs.has(extensionName)){
                         await fs.mkdir(path.join(src, extensionName), {recursive:true})
