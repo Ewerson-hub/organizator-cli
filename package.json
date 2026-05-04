@@ -15,7 +15,7 @@
   "license": "ISC",
   "description": "",
   "dependencies": {
-    "cli-progress": "^3.12.0",
+    "chalk": "^4.1.2",
     "commander": "^14.0.3",
     "pipeable-js": "^0.10.0"
   }
