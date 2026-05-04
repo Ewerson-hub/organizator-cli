@@ -36,10 +36,10 @@ Flags explanations:
 ### How to use
 After the installation process, you can combine all the flags you want :
 
-    //Simple organizaltion, with source and destination being the currently path, recursive mode disabled, organization mode by type, and defaults extensions:
+ * Simple organizaltion, with source and destination being the currently path, recursive mode disabled, organization mode by type, and defaults extensions:
 
-    organizator -s . 
+        organizator -s . 
 
-    //More specific organization, with differences between origin and destination, recursive mode enabled and search only for 'pdf' extensions :
+* More specific organization, with differences between origin and destination, recursive mode enabled and search only for 'pdf' extensions :
 
-    organizator -s '/home/user/download' -d '/home/user/documents' -r -e 'pdf'
+        organizator -s '/home/user/download' -d '/home/user/documents' -r -e 'pdf'
