@@ -15,14 +15,20 @@ program.name("organizator")
 .addOption(new Option('-e, --extensions <extensions...>', "filtro de extensoẽs")
 .choices(Object.values(EXTENSIONS)).default(EXTENSIONS))
 .action((options) => {
-
-    const src = (options.source === '.')? process.cwd() : path.resolve(options.src)
+    
+    
+    const src = (options.source == '.')? process.cwd() : path.resolve(options.source);
+    
     const dest = (options.destination)? path.resolve(options.dest) : src;
+    
     const mode = options.mode;
-    const ext = options.extensions
-    const recursive = options.recursive
+    
+    const ext = options.extensions;
+    
+    const recursive = options.recursive;
+    
 
-
+    
     // printHello([src, dest, mode, ext])
     startOrganization(src, dest, mode, ext, recursive)
     
