@@ -14,7 +14,7 @@ First clone this repositorie, open terminal in the clone folder and run this com
 
 Next, create a simbolical link to running the CLI wherever you want :
     
-    npm link organizer
+    npm link organizator
 
 ### About the CLI
 Flags explanations:
