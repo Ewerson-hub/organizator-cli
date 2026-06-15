@@ -11,7 +11,9 @@ const organizationController = async (mode, data) => {
         case MODES.TYPE:
             organizationByType(data);
             break;
-        case MODES.DATE_MONTH || MODES.DATE_YEAR || MODES.DATE:
+        case MODES.DATE_YEAR:
+        case MODES.DATE:
+        case MODES.DATE_MONTH:
             organizationByDate(data, auxiliarInformation);
             break;
         case MODES.TYPE_DATE:
@@ -24,31 +26,34 @@ const organizationController = async (mode, data) => {
     }
 }
 async function organizationByDate(data, auxiliarInformation){
-   const {src, dest, signal, files, createdDirs} = data 
+   const {dest, signal, files, createdDirs} = data 
    const {mode} = auxiliarInformation
    let cont = 0;
 
    for(const file of files){
         if(file.isFile()){
-
+            
             const fileSrc = path.join(file.path, file.name)
+            
             let fileDate = (await fs.stat(fileSrc)).mtime
             let dirNameToCreate;
 
             switch(mode){
                 case MODES.DATE_MONTH:
-                    dirNameToCreate = fileDate.toLocaleString(navigator.language, {month: 'long'})
-
-                    if(!createdDirs.has(dirNameToCreate)){
-                        await fs.mkdir(path.join(dest, dirNameToCreate), {recursive: true, signal: signal})
-                        createdDirs.add(dirNameToCreate)
-                    }
-
+                    dirNameToCreate = fileDate.toLocaleString(navigator.language, {month: 'long'});
+                    break;
+                case MODES.DATE_YEAR:
+                    dirNameToCreate = fileDate.toLocaleString(navigator.language, {year: "numeric"});
                     break;  
                 default: 
                     break
             }
 
+            if(!createdDirs.has(dirNameToCreate)){
+                await fs.mkdir(path.join(dest, dirNameToCreate), {recursive: true, signal: signal})
+                createdDirs.add(dirNameToCreate)
+            }
+            
             const fileFinalDest = path.join(dest, dirNameToCreate, file.name)
 
             if(fileSrc != fileFinalDest){
