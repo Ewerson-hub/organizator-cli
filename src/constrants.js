@@ -1,6 +1,8 @@
 const MODES = {
     TYPE: 'type',
-    DATE: 'date',
+    DATE_MONTH :'mouth',
+    DATE_YEAR :'year',
+    DATE_MONTH :'mouth',
     TYPE_DATE: 'type-date'
 }
 
