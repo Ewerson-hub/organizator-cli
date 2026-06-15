@@ -5,7 +5,7 @@ const chalk = require('chalk');
 
 const organizationController = async (mode, data) => {
 
-    const auxiliarInformation = {hasMixedOrganization: true, mode: mode}
+    const auxiliarInformation = { hasMixedOrganization: true, mode: mode }
 
     switch (mode) {
         case MODES.TYPE:
@@ -25,39 +25,47 @@ const organizationController = async (mode, data) => {
 
     }
 }
-async function organizationByDate(data, auxiliarInformation){
-   const {dest, signal, files, createdDirs} = data 
-   const {mode} = auxiliarInformation
-   let cont = 0;
+async function organizationByDate(data, auxiliarInformation) {
+    const { dest, signal, files, createdDirs } = data
+    const { mode } = auxiliarInformation
+    let cont = 0;
 
-   for(const file of files){
-        if(file.isFile()){
-            
+    for (const file of files) {
+        if (file.isFile()) {
+
             const fileSrc = path.join(file.path, file.name)
-            
+
             let fileDate = (await fs.stat(fileSrc)).mtime
             let dirNameToCreate;
 
-            switch(mode){
-                case MODES.DATE_MONTH:
-                    dirNameToCreate = fileDate.toLocaleString(navigator.language, {month: 'long'});
-                    break;
-                case MODES.DATE_YEAR:
-                    dirNameToCreate = fileDate.toLocaleString(navigator.language, {year: "numeric"});
-                    break;  
-                default: 
-                    break
+            if (MODES.DATE_MONTH === mode) {
+                dirNameToCreate = fileDate.toLocaleString(navigator.language, { month: 'long' });
+            } else if (MODES.DATE_YEAR === mode) {
+                dirNameToCreate = fileDate.toLocaleString(navigator.language, { year: "numeric" });
+            } else {
+                const year = fileDate.toLocaleString(navigator.language, { year: "numeric" });
+                const month = fileDate.toLocaleString(navigator.language, { month: 'long' });
+
+                if (!createdDirs.has(year)) {
+                    await fs.mkdir(path.join(dest, year), { recursive: true, signal: signal })
+                    createdDirs.add(year)
+                }
+
+                await fs.mkdir(path.join(dest, year, month), { recursive: true, signal: signal })
+                dirNameToCreate = path.join(year, month)
+
             }
 
-            if(!createdDirs.has(dirNameToCreate)){
-                await fs.mkdir(path.join(dest, dirNameToCreate), {recursive: true, signal: signal})
+
+            if (!createdDirs.has(dirNameToCreate) && mode !== MODES.DATE) {
+                await fs.mkdir(path.join(dest, dirNameToCreate), { recursive: true, signal: signal })
                 createdDirs.add(dirNameToCreate)
             }
-            
+
             const fileFinalDest = path.join(dest, dirNameToCreate, file.name)
 
-            if(fileSrc != fileFinalDest){
-                fs.rename(fileSrc, fileFinalDest, {signal:signal}).then( () => {
+            if (fileSrc != fileFinalDest) {
+                fs.rename(fileSrc, fileFinalDest, { signal: signal }).then(() => {
                     console.log('\n' + chalk.bold(`${file.name}`) + chalk.dim(' moved to ') + chalk.green(`${path.dirname(fileFinalDest)}`))
                     cont++
                 })
@@ -67,7 +75,7 @@ async function organizationByDate(data, auxiliarInformation){
                 console.log('\n' + chalk.bold(chalk.magenta(`Operação Concluida, ${cont} itens movidos !`)))
             }
         }
-   }
+    }
 
 }
 
@@ -95,16 +103,10 @@ async function organizationByType(data, auxiliarInformation = { hasMixedOrganiza
             const fileFinalDest = path.join(dest, extensionName, file.name)
 
             if (fileInitialSrc != fileFinalDest) {
-                if (auxiliarInformation.hasMixedOrganization) {
-                    console.log('TEM MODO alem do type', auxiliarInformation.mode)
-                } else {
-                    await fs.rename(fileInitialSrc, fileFinalDest, { signal: signal }).then(() => {
-                        cont++
-                        console.log('\n' + chalk.bold(`${file.name}`) + chalk.dim(' moved to ') + chalk.green(`${path.dirname(fileFinalDest)}`))
-                    })
-
-                }
-
+                await fs.rename(fileInitialSrc, fileFinalDest, { signal: signal }).then(() => {
+                    cont++
+                    console.log('\n' + chalk.bold(`${file.name}`) + chalk.dim(' moved to ') + chalk.green(`${path.dirname(fileFinalDest)}`))
+                })
 
             }
         }
