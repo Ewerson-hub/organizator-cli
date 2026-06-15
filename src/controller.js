@@ -11,11 +11,8 @@ const organizationController = async (mode, data) => {
         case MODES.TYPE:
             organizationByType(data);
             break;
-        case MODES.DATE_MONTH:
-            organizationByType(data, auxiliarInformation);
-            break;
-        case MODES.DATE_YEAR:
-            organizationByType(data, auxiliarInformation);
+        case MODES.DATE_MONTH || MODES.DATE_YEAR || MODES.DATE:
+            organizationByDate(data, auxiliarInformation);
             break;
         case MODES.TYPE_DATE:
             organizationByType(data, auxiliarInformation);
@@ -26,6 +23,49 @@ const organizationController = async (mode, data) => {
 
     }
 }
+async function organizationByDate(data, auxiliarInformation){
+   const {src, dest, signal, files, createdDirs} = data 
+   const {mode} = auxiliarInformation
+   let cont = 0;
+
+   for(const file of files){
+        if(file.isFile()){
+
+            const fileSrc = path.join(file.path, file.name)
+            let fileDate = (await fs.stat(fileSrc)).mtime
+            let dirNameToCreate;
+
+            switch(mode){
+                case MODES.DATE_MONTH:
+                    dirNameToCreate = fileDate.toLocaleString(navigator.language, {month: 'long'})
+
+                    if(!createdDirs.has(dirNameToCreate)){
+                        await fs.mkdir(path.join(dest, dirNameToCreate), {recursive: true, signal: signal})
+                        createdDirs.add(dirNameToCreate)
+                    }
+
+                    break;  
+                default: 
+                    break
+            }
+
+            const fileFinalDest = path.join(dest, dirNameToCreate, file.name)
+
+            if(fileSrc != fileFinalDest){
+                fs.rename(fileSrc, fileFinalDest, {signal:signal}).then( () => {
+                    console.log('\n' + chalk.bold(`${file.name}`) + chalk.dim(' moved to ') + chalk.green(`${path.dirname(fileFinalDest)}`))
+                    cont++
+                })
+            }
+
+            if (file === files.at(-1)) {
+                console.log('\n' + chalk.bold(chalk.magenta(`Operação Concluida, ${cont} itens movidos !`)))
+            }
+        }
+   }
+
+}
+
 async function organizationByType(data, auxiliarInformation = { hasMixedOrganization: false, mode: null }) {
     const { src, dest, signal, files, createdDirs, extensionsWhiteList } = data
 
@@ -69,5 +109,7 @@ async function organizationByType(data, auxiliarInformation = { hasMixedOrganiza
     }
 
 }
+
+
 
 module.exports = { organizationController }
