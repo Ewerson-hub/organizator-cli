@@ -1,4 +1,4 @@
-const { organizationController } = require('./controller.js')
+const { organizationController} = require('./controller.js')
 const fs = require('node:fs/promises')
 const path = require("node:path")
 const controller = new AbortController();
@@ -54,9 +54,7 @@ module.exports = {
             const createdDirs = new Set();
             const extensionsWhiteList = new Set(ext);
 
-
-            organizationController(mode, { src: src, dest: dest, signal: signal, files: files, createdDirs: createdDirs, extensionsWhiteList: extensionsWhiteList })
-
+            organizationController(mode, {src, dest, signal, files, createdDirs, extensionsWhiteList})
         } catch (err) {
             console.log(chalk.red(`Erro na execução -> ${err.message}`))
         }

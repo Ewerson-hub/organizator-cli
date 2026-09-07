@@ -4,122 +4,88 @@ const path = require("node:path")
 const chalk = require('chalk');
 
 const organizationController = async (mode, data) => {
+    const { src, dest, signal, files, createdDirs, extensionsWhiteList } = data
 
-    const auxiliarInformation = { hasMixedOrganization: true, mode: mode }
-
-    switch (mode) {
-        case MODES.TYPE:
-            organizationByType(data);
-            break;
-        case MODES.DATE_YEAR:
-        case MODES.DATE:
-        case MODES.DATE_MONTH:
-            organizationByDate(data, auxiliarInformation);
-            break;
-        case MODES.TYPE_DATE:
-            organizationByType(data, auxiliarInformation);
-            break;
-        default:
-            await organizationByType(data);
-            break;
-
-    }
-}
-async function organizationByDate(data, auxiliarInformation) {
-    const { dest, signal, files, createdDirs } = data
-    const { mode } = auxiliarInformation
     let cont = 0;
-
     for (const file of files) {
         if (file.isFile()) {
-            const fileSrc = path.join(file.parentPath, file.name)
+            const fileInitialSrc = path.join(file.parentPath, file.name);
 
-            let fileDate = (await fs.stat(fileSrc)).mtime
-            let dirNameToCreate;
+            let newDir;
 
-            if (MODES.DATE_MONTH === mode) {
-                dirNameToCreate = fileDate.toLocaleString(navigator.language, { month: 'long' });
-
-            } else if (MODES.DATE_YEAR === mode) {
-
-                dirNameToCreate = fileDate.toLocaleString(navigator.language, { year: "numeric" });
+            if (mode === MODES.TYPE) {
+                newDir = await separeByType({ fileInitialSrc, dest, signal, createdDirs, extensionsWhiteList })
+            } else if (mode === MODES.TYPE_DATE) {
+                newDir = ""
             } else {
+                const createdMonths = new Set();
+                newDir = await separeByDate({ fileInitialSrc, dest, signal, createdDirs, createdMonths, mode })
+            }
 
-                const year = fileDate.toLocaleString(navigator.language, { year: "numeric" });
-                const month = fileDate.toLocaleString(navigator.language, { month: 'long' });
+            if (newDir) {
+                console.log(newDir)
+                const fileFinalDest = path.join(dest, newDir, file.name)
 
-                if (!createdDirs.has(year)) {
-                    await fs.mkdir(path.join(dest, year), { recursive: true, signal: signal })
-                    createdDirs.add(year)
+                if (fileInitialSrc !== fileFinalDest) {
+                    await fs.rename(fileInitialSrc, fileFinalDest, { signal: signal }).then(() => {
+                        cont++
+                        console.log('\n' + chalk.bold(`${file.name}`) + chalk.dim(' moved to ') + chalk.green(`${path.dirname(fileFinalDest)}`))
+                    })
                 }
-
-                await fs.mkdir(path.join(dest, year, month), { recursive: true, signal: signal })
-                dirNameToCreate = path.join(year, month)
-
             }
-
-
-            if (!createdDirs.has(dirNameToCreate) && mode !== MODES.DATE) {
-                await fs.mkdir(path.join(dest, dirNameToCreate), { recursive: true, signal: signal })
-                createdDirs.add(dirNameToCreate)
-            }
-
-            const fileFinalDest = path.join(dest, dirNameToCreate, file.name)
-
-            if (fileSrc !== fileFinalDest) {
-                fs.rename(fileSrc, fileFinalDest, { signal: signal }).then(() => {
-                    console.log('\n' + chalk.bold(`${file.name}`) + chalk.dim(' moved to ') + chalk.green(`${path.dirname(fileFinalDest)}`))
-                    cont++
-                })
-            }
-
             if (file === files.at(-1)) {
                 console.log('\n' + chalk.bold(chalk.magenta(`Operação Concluida, ${cont} itens movidos !`)))
             }
+
         }
+
     }
 
 }
+const separeByDate = async (data) => {
+    //date has 3 options: date (year + month), only year and only month
+    const { fileInitialSrc, dest, signal, createdDirs, createdMonths, mode } = data
 
-async function organizationByType(data, auxiliarInformation = { hasMixedOrganization: false, mode: null }) {
-    const { src, dest, signal, files, createdDirs, extensionsWhiteList } = data
-    
+    let fileDate = (await fs.stat(fileInitialSrc)).mtime
+    let dirNameToCreate;
 
-    let cont = 0;
-    for (const file of files) {
+    if (mode === MODES.DATE_MONTH) {
+        dirNameToCreate = fileDate.toLocaleString(navigator.language, { month: 'long' })
+    } else if (mode === MODES.DATE_MONTH) {
+        dirNameToCreate = fileDate.toLocaleString(navigator.language, { year: "numeric" })
+    } else {
+        const year = fileDate.toLocaleString(navigator.language, { year: "numeric" });
+        const month = fileDate.toLocaleString(navigator.language, { month: 'long' });
 
-        const fileInitialSrc = path.join(file.parentPath, file.name);
-
-        //pega extensao do arquivo sem o ponto
-        const extensionName = path.extname(fileInitialSrc).slice(1);
-
-        //checa se a extensão esta na lista de arquivos desejado
-        if (extensionsWhiteList.has(extensionName)) {
-
-            //checa se o diretorio ja existe, se não -> cria ele 
-            if (!createdDirs.has(extensionName)) {
-                await fs.mkdir(path.join(dest, extensionName), { recursive: true, signal: signal })
-                createdDirs.add(extensionName)
-            }
-
-
-            const fileFinalDest = path.join(dest, extensionName, file.name)
-
-            if (fileInitialSrc !== fileFinalDest) {
-                await fs.rename(fileInitialSrc, fileFinalDest, { signal: signal }).then(() => {
-                    cont++
-                    console.log('\n' + chalk.bold(`${file.name}`) + chalk.dim(' moved to ') + chalk.green(`${path.dirname(fileFinalDest)}`))
-                })
-
-            }
+        if (!createdDirs.has(year)) {
+            await fs.mkdir(path.join(dest, year), { recursive: true, signal: signal })
+            createdDirs.add(year)
         }
-        if (file === files.at(-1)) {
-            console.log('\n' + chalk.bold(chalk.magenta(`Operação Concluida, ${cont} itens movidos !`)))
+        if (!createdMonths.has(`${year}/${month}`)) {
+            await fs.mkdir(path.join(dest, year, month), { recursive: true, signal: signal })
+            createdMonths.add(`${year}/${month}`)
         }
+
+        dirNameToCreate = path.join(year, month)
     }
+    return dirNameToCreate
+}
+const separeByType = async (data) => {
+    const { fileInitialSrc, dest, signal, createdDirs, extensionsWhiteList } = data
 
+    const extensionName = path.extname(fileInitialSrc).slice(1);
+
+    if (extensionsWhiteList.has(extensionName)) {
+        //checa se o diretorio ja existe, se não -> cria ele 
+        if (!createdDirs.has(extensionName)) {
+            await fs.mkdir(path.join(dest, extensionName), { recursive: true, signal: signal })
+            createdDirs.add(extensionName)
+        }
+        return extensionName
+    }
+    return false
 }
 
 
 
-module.exports = { organizationController }
+module.exports = { organizationController}
