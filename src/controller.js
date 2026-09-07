@@ -32,17 +32,19 @@ async function organizationByDate(data, auxiliarInformation) {
 
     for (const file of files) {
         if (file.isFile()) {
-
-            const fileSrc = path.join(file.path, file.name)
+            const fileSrc = path.join(file.parentPath, file.name)
 
             let fileDate = (await fs.stat(fileSrc)).mtime
             let dirNameToCreate;
 
             if (MODES.DATE_MONTH === mode) {
                 dirNameToCreate = fileDate.toLocaleString(navigator.language, { month: 'long' });
+
             } else if (MODES.DATE_YEAR === mode) {
+
                 dirNameToCreate = fileDate.toLocaleString(navigator.language, { year: "numeric" });
             } else {
+
                 const year = fileDate.toLocaleString(navigator.language, { year: "numeric" });
                 const month = fileDate.toLocaleString(navigator.language, { month: 'long' });
 
@@ -64,7 +66,7 @@ async function organizationByDate(data, auxiliarInformation) {
 
             const fileFinalDest = path.join(dest, dirNameToCreate, file.name)
 
-            if (fileSrc != fileFinalDest) {
+            if (fileSrc !== fileFinalDest) {
                 fs.rename(fileSrc, fileFinalDest, { signal: signal }).then(() => {
                     console.log('\n' + chalk.bold(`${file.name}`) + chalk.dim(' moved to ') + chalk.green(`${path.dirname(fileFinalDest)}`))
                     cont++
@@ -81,11 +83,12 @@ async function organizationByDate(data, auxiliarInformation) {
 
 async function organizationByType(data, auxiliarInformation = { hasMixedOrganization: false, mode: null }) {
     const { src, dest, signal, files, createdDirs, extensionsWhiteList } = data
+    
 
     let cont = 0;
     for (const file of files) {
 
-        const fileInitialSrc = path.join(file.path, file.name);
+        const fileInitialSrc = path.join(file.parentPath, file.name);
 
         //pega extensao do arquivo sem o ponto
         const extensionName = path.extname(fileInitialSrc).slice(1);
@@ -95,14 +98,14 @@ async function organizationByType(data, auxiliarInformation = { hasMixedOrganiza
 
             //checa se o diretorio ja existe, se não -> cria ele 
             if (!createdDirs.has(extensionName)) {
-                await fs.mkdir(path.join(src, extensionName), { recursive: true, signal: signal })
+                await fs.mkdir(path.join(dest, extensionName), { recursive: true, signal: signal })
                 createdDirs.add(extensionName)
             }
 
 
             const fileFinalDest = path.join(dest, extensionName, file.name)
 
-            if (fileInitialSrc != fileFinalDest) {
+            if (fileInitialSrc !== fileFinalDest) {
                 await fs.rename(fileInitialSrc, fileFinalDest, { signal: signal }).then(() => {
                     cont++
                     console.log('\n' + chalk.bold(`${file.name}`) + chalk.dim(' moved to ') + chalk.green(`${path.dirname(fileFinalDest)}`))
