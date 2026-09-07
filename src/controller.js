@@ -2,6 +2,7 @@ const { MODES } = require("./constrants");
 const fs = require('node:fs/promises')
 const path = require("node:path")
 const chalk = require('chalk');
+const os = require('node:os')
 
 const organizationController = async (mode, data) => {
     const { src, dest, signal, files, createdDirs, extensionsWhiteList } = data
@@ -21,6 +22,7 @@ const organizationController = async (mode, data) => {
                 const createdMonths = new Set();
                 newDir = await separeByDate({ fileInitialSrc, dest, signal, createdDirs, createdMonths, mode })
             }
+            console.log("new dir controller => ",newDir)
 
             if (newDir) {
                 console.log(newDir)
@@ -48,14 +50,16 @@ const separeByDate = async (data) => {
 
     let fileDate = (await fs.stat(fileInitialSrc)).mtime
     let dirNameToCreate;
+    const osLanguage = new Intl.DateTimeFormat().resolvedOptions().locale;
 
     if (mode === MODES.DATE_MONTH) {
-        dirNameToCreate = fileDate.toLocaleString(navigator.language, { month: 'long' })
-    } else if (mode === MODES.DATE_MONTH) {
-        dirNameToCreate = fileDate.toLocaleString(navigator.language, { year: "numeric" })
+        dirNameToCreate =  new Intl.DateTimeFormat(osLanguage, {month:'long'}).format(fileDate);
+    } else if (mode === MODES.DATE_YEAR) {
+        dirNameToCreate = new Intl.DateTimeFormat(osLanguage, {year: 'numeric'}).format(fileDate);
     } else {
-        const year = fileDate.toLocaleString(navigator.language, { year: "numeric" });
-        const month = fileDate.toLocaleString(navigator.language, { month: 'long' });
+
+        const year = new Intl.DateTimeFormat(osLanguage, {year: 'numeric'}).format(fileDate);
+        const month = new Intl.DateTimeFormat(osLanguage, {month:'long'}).format(fileDate);
 
         if (!createdDirs.has(year)) {
             await fs.mkdir(path.join(dest, year), { recursive: true, signal: signal })
