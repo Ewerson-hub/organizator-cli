@@ -2,7 +2,6 @@ const { MODES } = require("./constrants");
 const fs = require('node:fs/promises')
 const path = require("node:path")
 const chalk = require('chalk');
-const os = require('node:os')
 
 const organizationController = async (mode, data) => {
     const { src, dest, signal, files, createdDirs, extensionsWhiteList } = data
