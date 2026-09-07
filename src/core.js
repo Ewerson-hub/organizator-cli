@@ -54,7 +54,7 @@ module.exports = {
             const createdDirs = new Set();
             const extensionsWhiteList = new Set(ext);
 
-            organizationController(mode, {src, dest, signal, files, createdDirs, extensionsWhiteList})
+            await organizationController(mode, {src, dest, signal, files, createdDirs, extensionsWhiteList})
         } catch (err) {
             console.log(chalk.red(`Erro na execução -> ${err.message}`))
         }
